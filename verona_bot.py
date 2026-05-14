@@ -268,7 +268,7 @@ async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ─── ЗАПУСК ───────────────────────────────────────────────────────────────────
 
-def main():
+async def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
@@ -290,8 +290,8 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
 
     print("✅ Verona Store Bot запущен!")
-    app.run_polling(drop_pending_updates=True)
+    await app.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
