@@ -5,6 +5,7 @@ Verona Store Telegram Bot
 """
 
 import logging
+import asyncio
 import httpx
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -13,8 +14,8 @@ from telegram.ext import (
 )
 
 # ─── НАСТРОЙКИ ────────────────────────────────────────────────────────────────
-BOT_TOKEN = "8851790776:AAFIa2DIMCc3HoJjKCuPA8X9y-v3KIcS6xI"
-MANAGER_CHAT_ID = None   # ← вставь свой Telegram ID чтобы получать заявки
+BOT_TOKEN = "8851790776:AAFBvLHCYIXLTweEf1hc-ewuyPZoG8a9LCw"
+MANAGER_CHAT_ID = 825970353   # ← вставь свой Telegram ID чтобы получать заявки
                           #   узнать можно у @userinfobot
 
 # ─── СОСТОЯНИЯ ДИАЛОГА ────────────────────────────────────────────────────────
