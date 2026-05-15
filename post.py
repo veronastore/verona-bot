@@ -77,10 +77,16 @@ SYSTEM = """Ты — автор Telegram-канала магазина Verona St
 def generate_caption(context):
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
+        print("ANTHROPIC_API_KEY не найден!")
         return None
+    
     r = httpx.post(
         "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        headers={
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        },
         json={
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 300,
@@ -89,7 +95,16 @@ def generate_caption(context):
         },
         timeout=45
     )
-    return r.json()["content"][0]["text"]
+    
+    data = r.json()
+    print(f"API status: {r.status_code}")
+    print(f"API response: {data}")
+    
+    if "content" in data:
+        return data["content"][0]["text"]
+    else:
+        print(f"Ошибка API: {data.get('error', data)}")
+        return None
 
 def main():
     day = datetime.now(MOSCOW_TZ).timetuple().tm_yday
@@ -97,19 +112,22 @@ def main():
 
     print(f"Генерирую текст для поста...")
     caption = generate_caption(post["context"])
+    
     if not caption:
-        print("Ошибка генерации текста")
-        return
+        print("Не удалось сгенерировать текст — выхожу")
+        exit(1)
 
     r = httpx.post(
         f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto",
         json={"chat_id": CHANNEL_ID, "photo": post["photo"], "caption": caption},
         timeout=30
     )
+    
     if r.status_code == 200:
-        print("✅ Пост опубликован!")
+        print("Пост опубликован!")
     else:
-        print(f"❌ Ошибка: {r.text}")
+        print(f"Ошибка Telegram: {r.text}")
+        exit(1)
 
 if __name__ == "__main__":
     main()
