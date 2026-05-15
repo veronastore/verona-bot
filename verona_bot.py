@@ -230,7 +230,15 @@ async def force_post(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_CHAT_ID:
         return
     await update.message.reply_text("⏳ Публикую пост...")
-    await publish_daily_post(ctx.application)
+    try:
+        await ctx.application.bot.send_photo(
+            chat_id=CHANNEL_ID,
+            photo="https://cdn-salini.storage.yandexcloud.net/iblock/2da/2da22e46b6959d9b10c20b159d4bc327/00.jpg",
+            caption="🪨 Когда природа входит в дом\n\nВанна PERLA из литьевого мрамора Salini — природный материал, ручная отделка, форма которую хочется трогать.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
+        )
+        await update.message.reply_text("✅ Готово!")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Ошибка: {e}")
  
 async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
