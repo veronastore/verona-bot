@@ -1,7 +1,7 @@
 """
 Verona Store Telegram Bot — финальная версия с фото
 """
- 
+
 import logging
 import asyncio
 import time
@@ -12,16 +12,16 @@ from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
     MessageHandler, filters, ContextTypes, ConversationHandler
 )
- 
+
 BOT_TOKEN = "8851790776:AAFBvLHCYIXLTweEf1hc-ewuyPZoG8a9LCw"
 MANAGER_CHAT_ID = 825970353
 CHANNEL_ID = "@veronastore_ru"
 MOSCOW_TZ = timezone(timedelta(hours=3))
- 
+
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
- 
+
 WAITING_NAME, WAITING_PHONE = range(2)
- 
+
 COLLECTIONS = {
     "verona_design": {
         "title": "Verona Design",
@@ -42,14 +42,14 @@ COLLECTIONS = {
         "url": "https://verona-store.ru"
     },
 }
- 
+
 FAQ = {
     "faq_price": "💰 *Цены*\n\nСтоимость зависит от коллекции, размеров и комплектации.\nДля точного расчёта свяжитесь с менеджером.",
     "faq_delivery": "🚚 *Доставка*\n\nДоставляем по всей России.\nСроки: 4–8 недель с момента подтверждения заказа.",
     "faq_showroom": "🏠 *Шоурум*\n\nМосква\n📞 8 495 998-60-60\n✉️ info@verona-store.ru\n🕐 Пн–Пт 10:00–19:00, Сб 11:00–17:00",
     "faq_install": "🔧 *Монтаж*\n\nРаботаем с проверенными бригадами в Москве и МО.\nОбсуждается индивидуально при заказе.",
 }
- 
+
 POSTS = [
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/2da/2da22e46b6959d9b10c20b159d4bc327/00.jpg",
@@ -100,7 +100,7 @@ POSTS = [
         "caption": "💡 Свет который меняет всё\n\nПравильное освещение — половина успеха ванной комнаты. Световая стена вместо окна, подсветка ниш, зеркало с подсветкой — всё это создаёт атмосферу. Приходите в наш шоурум — у нас работают живые примеры освещения.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
 ]
- 
+
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🛋 Коллекции", callback_data="collections"),
@@ -108,7 +108,7 @@ def main_keyboard():
         [InlineKeyboardButton("📞 Консультация", callback_data="consult"),
          InlineKeyboardButton("🌐 Сайт", url="https://verona-store.ru")],
     ])
- 
+
 def collections_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Verona Design", callback_data="col_verona_design")],
@@ -116,7 +116,7 @@ def collections_keyboard():
         [InlineKeyboardButton("Brenta", callback_data="col_brenta")],
         [InlineKeyboardButton("← Назад", callback_data="back_main")],
     ])
- 
+
 def faq_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("💰 Цены", callback_data="faq_price")],
@@ -125,10 +125,10 @@ def faq_keyboard():
         [InlineKeyboardButton("🔧 Монтаж", callback_data="faq_install")],
         [InlineKeyboardButton("← Назад", callback_data="back_main")],
     ])
- 
+
 def cancel_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отмена", callback_data="cancel_consult")]])
- 
+
 async def publish_post(app: Application, post_index: int = None):
     if post_index is None:
         day = datetime.now(MOSCOW_TZ).timetuple().tm_yday
@@ -148,7 +148,7 @@ async def publish_post(app: Application, post_index: int = None):
             )
     except Exception as e:
         logging.error(f"Ошибка публикации: {e}")
- 
+
 async def scheduler(app: Application):
     logging.info("📅 Планировщик запущен — посты каждый день в 10:00 МСК")
     while True:
@@ -166,20 +166,20 @@ async def scheduler(app: Application):
         except Exception as e:
             logging.error(f"Ошибка планировщика: {e}")
             await asyncio.sleep(60)
- 
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     name = update.effective_user.first_name or "друг"
     await update.message.reply_text(
         f"Добро пожаловать, {name}! 👋\n\nЯ бот *Verona Store* — официального дилера премиальной мебели для ванных комнат.\n\nВыберите, что вас интересует:",
         parse_mode="Markdown", reply_markup=main_keyboard()
     )
- 
+
 async def force_post(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_CHAT_ID:
         return
     await update.message.reply_text("⏳ Публикую пост...")
     await publish_post(ctx.application)
- 
+
 async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -209,12 +209,12 @@ async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text("Отменено.", reply_markup=main_keyboard())
         return ConversationHandler.END
     return ConversationHandler.END
- 
+
 async def got_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["name"] = update.message.text.strip()
     await update.message.reply_text(f"Отлично, {ctx.user_data['name']}! 📞\n\nУкажите ваш номер телефона:", reply_markup=cancel_keyboard())
     return WAITING_PHONE
- 
+
 async def got_phone(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     phone = update.message.text.strip()
     name = ctx.user_data.get("name", "—")
@@ -230,11 +230,11 @@ async def got_phone(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
     return ConversationHandler.END
- 
+
 async def cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Отменено.", reply_markup=main_keyboard())
     return ConversationHandler.END
- 
+
 async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await ctx.bot.send_chat_action(update.effective_chat.id, "typing")
     try:
@@ -253,18 +253,18 @@ async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except Exception:
         reply = "Извините, сейчас не могу ответить.\nПозвоните: *8 495 998-60-60*"
     await update.message.reply_text(reply, parse_mode="Markdown", reply_markup=main_keyboard())
- 
+
 async def main():
     # Сначала удаляем webhook и сбрасываем все обновления
     app = Application.builder().token(BOT_TOKEN).build()
- 
+
     await app.initialize()
     await app.bot.delete_webhook(drop_pending_updates=True)
     await app.shutdown()
- 
+
     # Теперь запускаем бота чисто
     app = Application.builder().token(BOT_TOKEN).build()
- 
+
     conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(button, pattern="^consult$")],
         states={
@@ -274,15 +274,15 @@ async def main():
         fallbacks=[CommandHandler("cancel", cancel), CallbackQueryHandler(button, pattern="^cancel_consult$")],
         per_message=False,
     )
- 
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("post", force_post))
     app.add_handler(conv)
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
- 
+
     print("✅ Verona Store Bot запущен!")
- 
+
     async with app:
         await app.start()
         await app.updater.start_polling(drop_pending_updates=True)
@@ -290,7 +290,7 @@ async def main():
         await asyncio.Event().wait()
         await app.updater.stop()
         await app.stop()
- 
+
 if __name__ == "__main__":
     while True:
         try:
