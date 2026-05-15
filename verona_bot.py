@@ -1,5 +1,5 @@
 """
-Verona Store Telegram Bot — с автоперезапуском
+Verona Store Telegram Bot — автопостинг с фото
 """
  
 import logging
@@ -50,53 +50,69 @@ FAQ = {
     "faq_install": "🔧 *Монтаж*\n\nРаботаем с проверенными бригадами в Москве и МО.\nОбсуждается индивидуально при заказе.",
 }
  
-WEEKLY_SCHEDULE = {
-    0: {"brand": "Verona & Brenta", "topics": [
-        "Напиши пост о коллекции Frame от Verona Design — минималистичный дизайн, чистые линии.",
-        "Напиши пост о коллекции Verso от Brenta — итальянский характер, авторская эстетика.",
-        "Напиши пост о коллекции My Time от Verona Design — уют, персональный стиль.",
-        "Напиши пост о коллекции Scala от Brenta — современная выразительность.",
-    ]},
-    1: {"brand": "Итальянская керамика", "topics": [
-        "Напиши пост о бренде Catalano — итальянская керамика с 1967 года, инновационная глазурь CATAglaze.",
-        "Напиши пост о бренде Alice Ceramica — смелые формы, яркие цвета.",
-        "Напиши пост о бренде Ceramica Flaminia — итальянское производство с 1956 года.",
-        "Напиши пост о бренде Scarabeo — нестандартные раковины, более 400 моделей.",
-        "Напиши пост о бренде Ceramica Cielo — поэзия в керамике, пастельные цвета.",
-        "Напиши пост о бренде GSI Ceramica — функциональность и стиль.",
-        "Напиши пост о бренде Kerasan — сочетание традиций и инноваций.",
-    ]},
-    2: {"brand": "Смесители и сантехника", "topics": [
-        "Напиши пост о бренде Gessi — итальянские смесители ручной сборки, бронза и матовое золото.",
-        "Напиши пост о бренде Dornbracht — немецкие смесители класса люкс с 1950 года.",
-        "Напиши пост о бренде Fantini — итальянские смесители с 1947 года, ручная полировка.",
-        "Напиши пост о бренде CEA Design — баланс технологии и красоты.",
-        "Напиши пост о бренде Salini — российский производитель из литьевого камня.",
-    ]},
-    3: {"brand": "Ванны и душевые", "topics": [
-        "Напиши пост о бренде Bette — немецкие стальные ванны, 30 лет гарантии.",
-        "Напиши пост о бренде Valdama — итальянская керамика ручной работы.",
-        "Напиши пост о бренде Antonio Lupi — авангардный дизайн, натуральные материалы.",
-        "Напиши пост о бренде Falper — итальянские ванны из дерева, камня и металла.",
-        "Напиши пост о бренде Radaway — душевые ограждения, надёжное качество.",
-    ]},
-    4: {"brand": "Аксессуары и радиаторы", "topics": [
-        "Напиши пост о бренде Decor Walther — немецкие аксессуары ручной работы, хром и матовое золото.",
-        "Напиши пост о бренде Duravit — немецкий производитель с 200-летней историей.",
-        "Напиши пост о бренде Broner Radiator — дизайнерские радиаторы, тепло и стиль.",
-    ]},
-    5: {"brand": "Интерьерное вдохновение", "topics": [
-        "Напиши пост с советами как правильно спланировать ванную комнату.",
-        "Напиши пост о трендах в дизайне ванных комнат 2025 года.",
-        "Напиши пост о том как выбрать мебель для ванной.",
-        "Напиши пост об уходе за мебелью и сантехникой премиум-класса.",
-    ]},
-    6: {"brand": "Шоурум и сервис", "topics": [
-        "Напиши пост-приглашение в шоурум Verona Store в Москве.",
-        "Напиши пост о преимуществах покупки через Verona Store — опыт 15 лет.",
-        "Напиши пост о бесплатной консультации дизайнера в Verona Store.",
-    ]},
-}
+# ─── БАЗА ФОТО И ПОСТОВ ───────────────────────────────────────────────────────
+POSTS = [
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/2da/2da22e46b6959d9b10c20b159d4bc327/00.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой вдохновляющий пост о ванной комнате в природном стиле с массивной чёрной скалой. Ванна PERLA и раковины ARMONIA от Salini из литьевого мрамора. Проект дизайнера Полины Фоминой. Пиши как будто ты сам восхищён этим проектом."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/b0e/b0ee08dc1424defc20c54a118fd21434/SpalnaNovyy%20blok_View110000.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой пост о ванной в эко-стиле — три вида декоративной плитки: дерево, камень, мрамор. Ванна Ornella от Salini. Слияние трёх стихий природы в одном пространстве."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/4d3/4d32cf86850dc131d284f24a6a488ade/R_1.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой пост о мансардной ванной комнате с косым потолком. Ванна LUCE от Salini. Как ограниченное пространство мансарды превратить в роскошную ванную."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/9b5/9b5a3c65786a4d225ab6682a43f07809/R_2.jpg",
+        "brand": "Salini",
+        "topic": "Напиши вдохновляющий пост о минималистичной ванной комнате в светлых тонах. Чистота линий, premium качество материалов Salini, ощущение спокойствия и роскоши."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/cb9/cb955b6bac92a7e8e1788bd9a5a58728/03.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой пост о ванной комнате где природа и человеческое мастерство объединяются. Ванна Salini из литьевого камня как центральный элемент дизайна."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/220/220b573f70d0bade97dd6bf15eb1558c/05.jpg",
+        "brand": "Salini",
+        "topic": "Напиши пост о современной ванной комнате с деталями из натуральных материалов. Мебель и сантехника Salini — как выбрать правильный стиль для своего проекта."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/f97/f9767080f0a51c9ba8ef815f53ac8851/07.jpg",
+        "brand": "Salini",
+        "topic": "Напиши вдохновляющий пост о ванной комнате как личном sanctuary. Продукция Salini — ванны и раковины из литьевого мрамора для тех кто ценит детали."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/226/2260a325989a35ff96882a803d46e1a2/08.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой пост о том как правильно спланировать большую ванную комнату. Советы от экспертов Verona Store — зонирование, выбор мебели и сантехники Salini."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/b55/b5521eb42e6dff26e1344850faf7db95/09.jpg",
+        "brand": "Salini",
+        "topic": "Напиши пост о ванной комнате с угловой ванной Salini. Как максимально использовать пространство и при этом сохранить элегантность и комфорт."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/f5e/f5e01a1dfd6418a0ee8e15b180fce7be/01.jpg",
+        "brand": "Salini",
+        "topic": "Напиши вдохновляющий пост о ванной в современном стиле. Отдельностоящая ванна Salini как арт-объект — когда функциональность становится искусством."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/54c/54c053241a36ba1a06f064b460b490a8/04.jpg",
+        "brand": "Salini",
+        "topic": "Напиши живой пост о компактной ванной комнате до 5 кв.м. Как Salini помогает создать функциональное и красивое пространство даже в небольшой ванной."
+    },
+    {
+        "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/d3c/d3cdf37b46e3d5e72fd60b198dd1f442/06.jpg",
+        "brand": "Salini",
+        "topic": "Напиши пост о ванной комнате в тёмных тонах — графит, антрацит, чёрный мрамор. Как тёмные материалы Salini создают ощущение роскоши и глубины."
+    },
+]
  
 def main_keyboard():
     return InlineKeyboardMarkup([
@@ -126,15 +142,14 @@ def faq_keyboard():
 def cancel_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отмена", callback_data="cancel_consult")]])
  
-async def generate_post(topic: str, brand: str) -> str:
+async def generate_caption(topic: str, brand: str) -> str:
     system = (
         f"Ты контент-менеджер магазина Verona Store (verona-store.ru). "
-        f"Пишешь живые, интересные посты для Telegram-канала о премиальной мебели для ванных комнат. "
-        f"Сегодняшняя тема — {brand}. "
-        f"Стиль: живой, вдохновляющий, как будто пишет человек а не робот. Без штампов. "
-        f"Длина: 5-7 предложений. "
+        f"Пишешь живые, интересные подписи к фото для Telegram-канала о премиальной мебели для ванных. "
+        f"Стиль: живой, вдохновляющий, как пишет человек — без штампов и канцеляризмов. "
+        f"Длина: 4-6 предложений. "
         f"В конце добавь:\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot\n\n"
-        f"Используй 1-2 эмодзи. Пиши на русском языке."
+        f"Используй 1-2 эмодзи в тексте. Пиши на русском."
     )
     try:
         async with httpx.AsyncClient(timeout=30) as client:
@@ -143,37 +158,48 @@ async def generate_post(topic: str, brand: str) -> str:
                 headers={"Content-Type": "application/json"},
                 json={
                     "model": "claude-sonnet-4-20250514",
-                    "max_tokens": 600,
+                    "max_tokens": 500,
                     "system": system,
                     "messages": [{"role": "user", "content": topic}]
                 }
             )
         return r.json()["content"][0]["text"]
     except Exception as e:
-        logging.error(f"Ошибка генерации поста: {e}")
+        logging.error(f"Ошибка генерации текста: {e}")
         return None
  
 async def publish_daily_post(app: Application):
     now = datetime.now(MOSCOW_TZ)
-    weekday = now.weekday()
     day_of_year = now.timetuple().tm_yday
-    schedule = WEEKLY_SCHEDULE[weekday]
-    topics = schedule["topics"]
-    topic = topics[day_of_year % len(topics)]
-    brand = schedule["brand"]
-    logging.info(f"📝 Генерирую пост: {brand}")
-    post = await generate_post(topic, brand)
-    if post:
+    post_data = POSTS[day_of_year % len(POSTS)]
+ 
+    photo_url = post_data["photo"]
+    brand = post_data["brand"]
+    topic = post_data["topic"]
+ 
+    logging.info(f"📝 Генерирую пост с фото: {brand}")
+    caption = await generate_caption(topic, brand)
+ 
+    if caption:
         try:
-            await app.bot.send_message(chat_id=CHANNEL_ID, text=post)
-            logging.info(f"✅ Пост опубликован! Тема: {brand}")
+            await app.bot.send_photo(
+                chat_id=CHANNEL_ID,
+                photo=photo_url,
+                caption=caption
+            )
+            logging.info(f"✅ Пост с фото опубликован! Бренд: {brand}")
             if MANAGER_CHAT_ID:
                 await app.bot.send_message(
                     MANAGER_CHAT_ID,
-                    f"✅ Пост опубликован!\n\n📌 {brand}\n\n{post[:300]}..."
+                    f"✅ Пост опубликован в канал!\n\n📌 {brand}\n\n{caption[:200]}..."
                 )
         except Exception as e:
             logging.error(f"Ошибка публикации: {e}")
+            # Если фото не загрузилось — публикуем только текст
+            try:
+                await app.bot.send_message(chat_id=CHANNEL_ID, text=caption)
+            except Exception as e2:
+                logging.error(f"Ошибка публикации текста: {e2}")
  
 async def scheduler(app: Application):
     logging.info("📅 Планировщик запущен — посты каждый день в 10:00 МСК")
@@ -190,7 +216,7 @@ async def scheduler(app: Application):
             await asyncio.sleep(wait_seconds)
             await publish_daily_post(app)
         except Exception as e:
-            logging.error(f"Ошибка планировщика: {e}. Продолжаю...")
+            logging.error(f"Ошибка планировщика: {e}")
             await asyncio.sleep(60)
  
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -199,6 +225,12 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"Добро пожаловать, {name}! 👋\n\nЯ бот *Verona Store* — официального дилера премиальной мебели для ванных комнат.\n\nВыберите, что вас интересует:",
         parse_mode="Markdown", reply_markup=main_keyboard()
     )
+ 
+async def force_post(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != MANAGER_CHAT_ID:
+        return
+    await update.message.reply_text("⏳ Публикую пост...")
+    await publish_daily_post(ctx.application)
  
 async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -286,11 +318,13 @@ async def main():
         per_message=False,
     )
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("post", force_post))
     app.add_handler(conv)
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
  
-    print("✅ Verona Store Bot запущен!")
+    print("✅ Verona Store Bot запущен с фото-постингом!")
+    print(f"📅 Посты с фото каждый день в 10:00 МСК в {CHANNEL_ID}")
  
     async with app:
         await app.start()
