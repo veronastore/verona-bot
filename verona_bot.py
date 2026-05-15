@@ -1,9 +1,10 @@
 """
-Verona Store Telegram Bot — автопостинг по всем брендам
+Verona Store Telegram Bot — с автоперезапуском
 """
-
+ 
 import logging
 import asyncio
+import time
 import httpx
 from datetime import datetime, timezone, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -11,16 +12,16 @@ from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
     MessageHandler, filters, ContextTypes, ConversationHandler
 )
-
+ 
 BOT_TOKEN = "8851790776:AAFBvLHCYIXLTweEf1hc-ewuyPZoG8a9LCw"
 MANAGER_CHAT_ID = 825970353
 CHANNEL_ID = "@veronastore_ru"
 MOSCOW_TZ = timezone(timedelta(hours=3))
-
+ 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
-
+ 
 WAITING_NAME, WAITING_PHONE = range(2)
-
+ 
 COLLECTIONS = {
     "verona_design": {
         "title": "Verona Design",
@@ -41,87 +42,62 @@ COLLECTIONS = {
         "url": "https://verona-store.ru"
     },
 }
-
+ 
 FAQ = {
     "faq_price": "💰 *Цены*\n\nСтоимость зависит от коллекции, размеров и комплектации.\nДля точного расчёта свяжитесь с менеджером.",
     "faq_delivery": "🚚 *Доставка*\n\nДоставляем по всей России.\nСроки: 4–8 недель с момента подтверждения заказа.",
     "faq_showroom": "🏠 *Шоурум*\n\nМосква\n📞 8 495 998-60-60\n✉️ info@verona-store.ru\n🕐 Пн–Пт 10:00–19:00, Сб 11:00–17:00",
     "faq_install": "🔧 *Монтаж*\n\nРаботаем с проверенными бригадами в Москве и МО.\nОбсуждается индивидуально при заказе.",
 }
-
-# ─── КОНТЕНТ-ПЛАН ─────────────────────────────────────────────────────────────
-# 7 тем по дням недели, каждый день — свой бренд/тема
+ 
 WEEKLY_SCHEDULE = {
-    0: {  # Понедельник
-        "brand": "Verona & Brenta",
-        "topics": [
-            "Напиши пост о коллекции Frame от Verona Design — минималистичный дизайн, чистые линии, архитектурная точность.",
-            "Напиши пост о коллекции Verso от Brenta — итальянский характер, авторская эстетика.",
-            "Напиши пост о коллекции My Time от Verona Design — уют, персональный стиль, тёплые материалы.",
-            "Напиши пост о коллекции Scala от Brenta — керамогранит, монолитность, современная выразительность.",
-        ]
-    },
-    1: {  # Вторник
-        "brand": "Итальянская керамика",
-        "topics": [
-            "Напиши пост о бренде Catalano — итальянская керамика с 1967 года, минимализм, инновационная глазурь CATAglaze.",
-            "Напиши пост о бренде Alice Ceramica — смелые формы, яркие цвета, нестандартные решения для ванной.",
-            "Напиши пост о бренде Ceramica Flaminia — итальянское производство с 1956 года, сотрудничество с известными дизайнерами.",
-            "Напиши пост о бренде Scarabeo — нестандартные раковины и унитазы, более 400 моделей, широкая палитра.",
-            "Напиши пост о бренде Ceramica Cielo — поэзия в керамике, нежные формы, пастельные цвета, уникальные фактуры.",
-            "Напиши пост о бренде GSI Ceramica — функциональность и стиль, коллаборации с международными дизайнерами.",
-            "Напиши пост о бренде Kerasan — сочетание традиций и инноваций, ретро-стиль и современные решения.",
-            "Напиши пост о бренде Artceram — итальянская керамика премиум-класса, смелый дизайн.",
-        ]
-    },
-    2: {  # Среда
-        "brand": "Смесители и сантехника",
-        "topics": [
-            "Напиши пост о бренде Gessi — итальянские смесители ручной сборки, нестандартные материалы, бронза и матовое золото.",
-            "Напиши пост о бренде Dornbracht — немецкие смесители класса люкс с 1950 года, инновационные технологии.",
-            "Напиши пост о бренде Fantini — итальянские смесители с 1947 года, ручная полировка, классика и современность.",
-            "Напиши пост о бренде CEA Design — итальянские смесители, баланс технологии и красоты, коллаборации с дизайнерами.",
-            "Напиши пост о бренде Salini — российский производитель сантехники из литьевого камня, более 700 партнёров.",
-            "Напиши пост о бренде Rubinetterie 3M и FIMA — итальянские смесители, более 50 лет опыта, надёжность и элегантность.",
-        ]
-    },
-    3: {  # Четверг
-        "brand": "Ванны и душевые",
-        "topics": [
-            "Напиши пост о бренде Bette — немецкие стальные эмалированные ванны, 30 лет гарантии, более 600 цветов.",
-            "Напиши пост о бренде Valdama — итальянская керамика ручной работы, уникальные формы и авторский дизайн.",
-            "Напиши пост о бренде Antonio Lupi — авангардный дизайн, ванная как место для медитации, натуральные материалы.",
-            "Напиши пост о бренде Falper — итальянские ванны и душевые из дерева, камня и металла.",
-            "Напиши пост о бренде Radaway — польские душевые ограждения, широкий ассортимент, надёжное качество.",
-        ]
-    },
-    4: {  # Пятница
-        "brand": "Аксессуары и радиаторы",
-        "topics": [
-            "Напиши пост о бренде Decor Walther — немецкие аксессуары ручной работы, хром и матовое золото.",
-            "Напиши пост о бренде Duravit — немецкий производитель с 200-летней историей, сотрудничество с Philippe Starck.",
-            "Напиши пост о бренде Broner Radiator — дизайнерские радиаторы, тепло и стиль в вашей ванной.",
-        ]
-    },
-    5: {  # Суббота
-        "brand": "Интерьерное вдохновение",
-        "topics": [
-            "Напиши пост с советами как правильно спланировать ванную комнату — зонирование, освещение, хранение.",
-            "Напиши пост о трендах в дизайне ванных комнат 2025 года — материалы, цвета, стили.",
-            "Напиши пост о том как выбрать мебель для ванной — влагостойкость, стиль, функциональность.",
-            "Напиши пост об уходе за мебелью и сантехникой премиум-класса — советы от экспертов.",
-        ]
-    },
-    6: {  # Воскресенье
-        "brand": "Шоурум и сервис",
-        "topics": [
-            "Напиши пост-приглашение в шоурум Verona Store в Москве — живая экспозиция, консультации, запись на визит.",
-            "Напиши пост о преимуществах покупки через Verona Store — опыт 15 лет, официальный дилер, гарантия.",
-            "Напиши пост о бесплатной консультации дизайнера в Verona Store — подбор комплектации под проект.",
-        ]
-    },
+    0: {"brand": "Verona & Brenta", "topics": [
+        "Напиши пост о коллекции Frame от Verona Design — минималистичный дизайн, чистые линии.",
+        "Напиши пост о коллекции Verso от Brenta — итальянский характер, авторская эстетика.",
+        "Напиши пост о коллекции My Time от Verona Design — уют, персональный стиль.",
+        "Напиши пост о коллекции Scala от Brenta — современная выразительность.",
+    ]},
+    1: {"brand": "Итальянская керамика", "topics": [
+        "Напиши пост о бренде Catalano — итальянская керамика с 1967 года, инновационная глазурь CATAglaze.",
+        "Напиши пост о бренде Alice Ceramica — смелые формы, яркие цвета.",
+        "Напиши пост о бренде Ceramica Flaminia — итальянское производство с 1956 года.",
+        "Напиши пост о бренде Scarabeo — нестандартные раковины, более 400 моделей.",
+        "Напиши пост о бренде Ceramica Cielo — поэзия в керамике, пастельные цвета.",
+        "Напиши пост о бренде GSI Ceramica — функциональность и стиль.",
+        "Напиши пост о бренде Kerasan — сочетание традиций и инноваций.",
+    ]},
+    2: {"brand": "Смесители и сантехника", "topics": [
+        "Напиши пост о бренде Gessi — итальянские смесители ручной сборки, бронза и матовое золото.",
+        "Напиши пост о бренде Dornbracht — немецкие смесители класса люкс с 1950 года.",
+        "Напиши пост о бренде Fantini — итальянские смесители с 1947 года, ручная полировка.",
+        "Напиши пост о бренде CEA Design — баланс технологии и красоты.",
+        "Напиши пост о бренде Salini — российский производитель из литьевого камня.",
+    ]},
+    3: {"brand": "Ванны и душевые", "topics": [
+        "Напиши пост о бренде Bette — немецкие стальные ванны, 30 лет гарантии.",
+        "Напиши пост о бренде Valdama — итальянская керамика ручной работы.",
+        "Напиши пост о бренде Antonio Lupi — авангардный дизайн, натуральные материалы.",
+        "Напиши пост о бренде Falper — итальянские ванны из дерева, камня и металла.",
+        "Напиши пост о бренде Radaway — душевые ограждения, надёжное качество.",
+    ]},
+    4: {"brand": "Аксессуары и радиаторы", "topics": [
+        "Напиши пост о бренде Decor Walther — немецкие аксессуары ручной работы, хром и матовое золото.",
+        "Напиши пост о бренде Duravit — немецкий производитель с 200-летней историей.",
+        "Напиши пост о бренде Broner Radiator — дизайнерские радиаторы, тепло и стиль.",
+    ]},
+    5: {"brand": "Интерьерное вдохновение", "topics": [
+        "Напиши пост с советами как правильно спланировать ванную комнату.",
+        "Напиши пост о трендах в дизайне ванных комнат 2025 года.",
+        "Напиши пост о том как выбрать мебель для ванной.",
+        "Напиши пост об уходе за мебелью и сантехникой премиум-класса.",
+    ]},
+    6: {"brand": "Шоурум и сервис", "topics": [
+        "Напиши пост-приглашение в шоурум Verona Store в Москве.",
+        "Напиши пост о преимуществах покупки через Verona Store — опыт 15 лет.",
+        "Напиши пост о бесплатной консультации дизайнера в Verona Store.",
+    ]},
 }
-
+ 
 def main_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🛋 Коллекции", callback_data="collections"),
@@ -129,7 +105,7 @@ def main_keyboard():
         [InlineKeyboardButton("📞 Консультация", callback_data="consult"),
          InlineKeyboardButton("🌐 Сайт", url="https://verona-store.ru")],
     ])
-
+ 
 def collections_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Verona Design", callback_data="col_verona_design")],
@@ -137,7 +113,7 @@ def collections_keyboard():
         [InlineKeyboardButton("Brenta", callback_data="col_brenta")],
         [InlineKeyboardButton("← Назад", callback_data="back_main")],
     ])
-
+ 
 def faq_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("💰 Цены", callback_data="faq_price")],
@@ -146,20 +122,18 @@ def faq_keyboard():
         [InlineKeyboardButton("🔧 Монтаж", callback_data="faq_install")],
         [InlineKeyboardButton("← Назад", callback_data="back_main")],
     ])
-
+ 
 def cancel_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отмена", callback_data="cancel_consult")]])
-
-# ─── АВТОПОСТИНГ ──────────────────────────────────────────────────────────────
-
+ 
 async def generate_post(topic: str, brand: str) -> str:
     system = (
         f"Ты контент-менеджер магазина Verona Store (verona-store.ru). "
-        f"Пишешь посты для Telegram-канала о премиальной мебели и сантехнике для ванных комнат. "
-        f"Сегодняшняя тема — бренд/направление: {brand}. "
-        f"Стиль: профессиональный, вдохновляющий, без излишнего пафоса. "
+        f"Пишешь живые, интересные посты для Telegram-канала о премиальной мебели для ванных комнат. "
+        f"Сегодняшняя тема — {brand}. "
+        f"Стиль: живой, вдохновляющий, как будто пишет человек а не робот. Без штампов. "
         f"Длина: 5-7 предложений. "
-        f"В конце обязательно добавь:\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot\n\n"
+        f"В конце добавь:\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot\n\n"
         f"Используй 1-2 эмодзи. Пиши на русском языке."
     )
     try:
@@ -178,20 +152,17 @@ async def generate_post(topic: str, brand: str) -> str:
     except Exception as e:
         logging.error(f"Ошибка генерации поста: {e}")
         return None
-
+ 
 async def publish_daily_post(app: Application):
     now = datetime.now(MOSCOW_TZ)
     weekday = now.weekday()
     day_of_year = now.timetuple().tm_yday
-
     schedule = WEEKLY_SCHEDULE[weekday]
     topics = schedule["topics"]
     topic = topics[day_of_year % len(topics)]
     brand = schedule["brand"]
-
     logging.info(f"📝 Генерирую пост: {brand}")
     post = await generate_post(topic, brand)
-
     if post:
         try:
             await app.bot.send_message(chat_id=CHANNEL_ID, text=post)
@@ -199,43 +170,40 @@ async def publish_daily_post(app: Application):
             if MANAGER_CHAT_ID:
                 await app.bot.send_message(
                     MANAGER_CHAT_ID,
-                    f"✅ Пост опубликован в канал!\n\n📌 Тема: {brand}\n\n{post[:300]}..."
+                    f"✅ Пост опубликован!\n\n📌 {brand}\n\n{post[:300]}..."
                 )
         except Exception as e:
             logging.error(f"Ошибка публикации: {e}")
-    else:
-        logging.error("Не удалось сгенерировать пост")
-
+ 
 async def scheduler(app: Application):
     logging.info("📅 Планировщик запущен — посты каждый день в 10:00 МСК")
     while True:
-        now = datetime.now(MOSCOW_TZ)
-        target = now.replace(hour=10, minute=0, second=0, microsecond=0)
-        if now >= target:
-            target = target + timedelta(days=1)
-        wait_seconds = (target - now).total_seconds()
-        h = int(wait_seconds // 3600)
-        m = int((wait_seconds % 3600) // 60)
-        logging.info(f"⏰ Следующий пост через {h}ч {m}м")
-        await asyncio.sleep(wait_seconds)
-        await publish_daily_post(app)
-
-# ─── ХЭНДЛЕРЫ ─────────────────────────────────────────────────────────────────
-
+        try:
+            now = datetime.now(MOSCOW_TZ)
+            target = now.replace(hour=10, minute=0, second=0, microsecond=0)
+            if now >= target:
+                target = target + timedelta(days=1)
+            wait_seconds = (target - now).total_seconds()
+            h = int(wait_seconds // 3600)
+            m = int((wait_seconds % 3600) // 60)
+            logging.info(f"⏰ Следующий пост через {h}ч {m}м")
+            await asyncio.sleep(wait_seconds)
+            await publish_daily_post(app)
+        except Exception as e:
+            logging.error(f"Ошибка планировщика: {e}. Продолжаю...")
+            await asyncio.sleep(60)
+ 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     name = update.effective_user.first_name or "друг"
     await update.message.reply_text(
-        f"Добро пожаловать, {name}! 👋\n\n"
-        f"Я бот *Verona Store* — официального дилера премиальной мебели для ванных комнат.\n\n"
-        f"Выберите, что вас интересует:",
+        f"Добро пожаловать, {name}! 👋\n\nЯ бот *Verona Store* — официального дилера премиальной мебели для ванных комнат.\n\nВыберите, что вас интересует:",
         parse_mode="Markdown", reply_markup=main_keyboard()
     )
-
+ 
 async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
-
     if data == "back_main":
         await q.edit_message_text("Чем могу помочь?", reply_markup=main_keyboard())
     elif data == "collections":
@@ -249,17 +217,11 @@ async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                  InlineKeyboardButton("🌐 Подробнее", url=col["url"])],
                 [InlineKeyboardButton("← К коллекциям", callback_data="collections")],
             ])
-            await q.edit_message_text(
-                f"*{col['title']}*\n\n{col['desc']}\n\n*Модели:*\n{items}",
-                parse_mode="Markdown", reply_markup=kb
-            )
+            await q.edit_message_text(f"*{col['title']}*\n\n{col['desc']}\n\n*Модели:*\n{items}", parse_mode="Markdown", reply_markup=kb)
     elif data == "faq":
         await q.edit_message_text("❓ *Частые вопросы*\n\nВыберите тему:", parse_mode="Markdown", reply_markup=faq_keyboard())
     elif data in FAQ:
-        await q.edit_message_text(
-            FAQ[data], parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("← Назад", callback_data="faq")]])
-        )
+        await q.edit_message_text(FAQ[data], parse_mode="Markdown", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("← Назад", callback_data="faq")]]))
     elif data == "consult":
         await q.edit_message_text("📝 *Заявка на консультацию*\n\nКак вас зовут?", parse_mode="Markdown", reply_markup=cancel_keyboard())
         return WAITING_NAME
@@ -267,15 +229,12 @@ async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text("Отменено.", reply_markup=main_keyboard())
         return ConversationHandler.END
     return ConversationHandler.END
-
+ 
 async def got_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["name"] = update.message.text.strip()
-    await update.message.reply_text(
-        f"Отлично, {ctx.user_data['name']}! 📞\n\nУкажите ваш номер телефона:",
-        reply_markup=cancel_keyboard()
-    )
+    await update.message.reply_text(f"Отлично, {ctx.user_data['name']}! 📞\n\nУкажите ваш номер телефона:", reply_markup=cancel_keyboard())
     return WAITING_PHONE
-
+ 
 async def got_phone(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     phone = update.message.text.strip()
     name = ctx.user_data.get("name", "—")
@@ -291,11 +250,11 @@ async def got_phone(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
     return ConversationHandler.END
-
+ 
 async def cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Отменено.", reply_markup=main_keyboard())
     return ConversationHandler.END
-
+ 
 async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await ctx.bot.send_chat_action(update.effective_chat.id, "typing")
     try:
@@ -306,46 +265,33 @@ async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 json={
                     "model": "claude-sonnet-4-20250514",
                     "max_tokens": 400,
-                    "system": (
-                        "Ты помощник магазина Verona Store (verona-store.ru). "
-                        "Продаём премиальную мебель и сантехнику для ванных: Verona, Brenta, Salini, "
-                        "Catalano, Valdama, Gessi, Dornbracht, Bette, Decor Walther и другие. "
-                        "Шоурум в Москве. Тел: 8 495 998-60-60. Отвечай кратко по-русски."
-                    ),
+                    "system": "Ты помощник магазина Verona Store (verona-store.ru). Продаём премиальную мебель для ванных: Verona, Brenta, Salini, Catalano, Valdama, Gessi, Dornbracht, Bette, Decor Walther и другие. Шоурум в Москве. Тел: 8 495 998-60-60. Отвечай кратко по-русски.",
                     "messages": [{"role": "user", "content": update.message.text}]
                 }
             )
         reply = r.json()["content"][0]["text"]
     except Exception:
-        reply = "Извините, сейчас не могу ответить автоматически.\nПозвоните нам: *8 495 998-60-60*"
+        reply = "Извините, сейчас не могу ответить.\nПозвоните: *8 495 998-60-60*"
     await update.message.reply_text(reply, parse_mode="Markdown", reply_markup=main_keyboard())
-
-# ─── ЗАПУСК ───────────────────────────────────────────────────────────────────
-
+ 
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
-
     conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(button, pattern="^consult$")],
         states={
             WAITING_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, got_name)],
             WAITING_PHONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, got_phone)],
         },
-        fallbacks=[
-            CommandHandler("cancel", cancel),
-            CallbackQueryHandler(button, pattern="^cancel_consult$"),
-        ],
+        fallbacks=[CommandHandler("cancel", cancel), CallbackQueryHandler(button, pattern="^cancel_consult$")],
         per_message=False,
     )
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv)
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
-
+ 
     print("✅ Verona Store Bot запущен!")
-    print(f"📅 Автопостинг в {CHANNEL_ID} каждый день в 10:00 МСК")
-
+ 
     async with app:
         await app.start()
         await app.updater.start_polling(drop_pending_updates=True)
@@ -353,6 +299,11 @@ async def main():
         await asyncio.Event().wait()
         await app.updater.stop()
         await app.stop()
-
+ 
 if __name__ == "__main__":
-    asyncio.run(main())
+    while True:
+        try:
+            asyncio.run(main())
+        except Exception as e:
+            logging.error(f"Бот упал: {e}. Перезапуск через 5 секунд...")
+            time.sleep(5)
