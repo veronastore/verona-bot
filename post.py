@@ -88,7 +88,7 @@ def generate_caption(context):
             "content-type": "application/json"
         },
         json={
-            "model": "claude-sonnet-4-20250514",
+            "model": "claude-sonnet-4-5",
             "max_tokens": 300,
             "system": SYSTEM,
             "messages": [{"role": "user", "content": f"Напиши пост для этого фото: {context}"}]
