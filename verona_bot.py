@@ -1,5 +1,5 @@
 """
-Verona Store Telegram Bot — финальная версия с фото
+Verona Store Telegram Bot — уникальные посты через Claude AI каждый день
 """
 
 import logging
