@@ -80,8 +80,7 @@ def generate_caption(context):
         return None
     r = httpx.post(
         "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-        json={
+        headers={"x-api-key": api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 300,
             "system": SYSTEM,
