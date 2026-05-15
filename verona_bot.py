@@ -1,5 +1,5 @@
 """
-Verona Store Telegram Bot — автопостинг с фото
+Verona Store Telegram Bot — финальная версия с фото
 """
  
 import logging
@@ -50,67 +50,54 @@ FAQ = {
     "faq_install": "🔧 *Монтаж*\n\nРаботаем с проверенными бригадами в Москве и МО.\nОбсуждается индивидуально при заказе.",
 }
  
-# ─── БАЗА ФОТО И ПОСТОВ ───────────────────────────────────────────────────────
 POSTS = [
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/2da/2da22e46b6959d9b10c20b159d4bc327/00.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой вдохновляющий пост о ванной комнате в природном стиле с массивной чёрной скалой. Ванна PERLA и раковины ARMONIA от Salini из литьевого мрамора. Проект дизайнера Полины Фоминой. Пиши как будто ты сам восхищён этим проектом."
+        "caption": "🪨 Когда природа входит в дом\n\nМассивная скала, ванна PERLA из литьевого мрамора, круглые раковины ARMONIA — этот проект доказывает: ванная может быть произведением искусства. Salini делает сантехнику из искусственного камня, которая живёт в интерьере как природный объект.\n\nПриходите в наш шоурум — покажем коллекцию вживую.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/b0e/b0ee08dc1424defc20c54a118fd21434/SpalnaNovyy%20blok_View110000.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой пост о ванной в эко-стиле — три вида декоративной плитки: дерево, камень, мрамор. Ванна Ornella от Salini. Слияние трёх стихий природы в одном пространстве."
+        "caption": "🌿 Три стихии в одном пространстве\n\nДерево, камень, мрамор — три вида декоративной плитки создают многослойную атмосферу. Ванна Ornella от Salini стала центром этого эко-проекта. Здесь каждая деталь работает на цельность образа.\n\nХотите создать такое пространство? Мы поможем подобрать всё необходимое.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/4d3/4d32cf86850dc131d284f24a6a488ade/R_1.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой пост о мансардной ванной комнате с косым потолком. Ванна LUCE от Salini. Как ограниченное пространство мансарды превратить в роскошную ванную."
+        "caption": "🏔 Мансарда как роскошь\n\nКосой потолок — не ограничение, а особенность. Ванна LUCE от Salini органично вписалась в нестандартное пространство мансарды. Иногда именно сложные условия рождают самые интересные интерьеры.\n\nПодберём решение для любой планировки.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/9b5/9b5a3c65786a4d225ab6682a43f07809/R_2.jpg",
-        "brand": "Salini",
-        "topic": "Напиши вдохновляющий пост о минималистичной ванной комнате в светлых тонах. Чистота линий, premium качество материалов Salini, ощущение спокойствия и роскоши."
+        "caption": "✨ Минимализм в деталях\n\nСветлые тона, чистые линии, ничего лишнего. Сантехника Salini из литьевого мрамора создаёт ощущение спокойствия и продуманной роскоши. Это не про дорого — это про правильно.\n\nПриходите в шоурум — почувствуйте разницу вживую.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/cb9/cb955b6bac92a7e8e1788bd9a5a58728/03.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой пост о ванной комнате где природа и человеческое мастерство объединяются. Ванна Salini из литьевого камня как центральный элемент дизайна."
+        "caption": "💎 Литьевой мрамор — материал который не стареет\n\nSalini производит сантехнику из искусственного камня — это не пластик и не акрил. Твёрдая поверхность, устойчивая к царапинам, тёплая на ощупь. Ванны и раковины которые выглядят одинаково хорошо через 10 лет.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/220/220b573f70d0bade97dd6bf15eb1558c/05.jpg",
-        "brand": "Salini",
-        "topic": "Напиши пост о современной ванной комнате с деталями из натуральных материалов. Мебель и сантехника Salini — как выбрать правильный стиль для своего проекта."
+        "caption": "🛁 Отдельностоящая ванна — главный герой\n\nКогда ванна стоит отдельно от стены — она становится скульптурой. Salini делает отдельностоящие ванны из литьевого мрамора в разных формах и цветах. Каждая — арт-объект в вашем интерьере.\n\nСмотрите коллекцию в нашем шоуруме.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/f97/f9767080f0a51c9ba8ef815f53ac8851/07.jpg",
-        "brand": "Salini",
-        "topic": "Напиши вдохновляющий пост о ванной комнате как личном sanctuary. Продукция Salini — ванны и раковины из литьевого мрамора для тех кто ценит детали."
+        "caption": "🤍 Ванная как личное пространство\n\nЗдесь начинается и заканчивается каждый день. Именно поэтому важно чтобы это пространство было вашим — по стилю, по материалам, по ощущению. Salini и Verona Store помогают создать именно такую ванную.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/226/2260a325989a35ff96882a803d46e1a2/08.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой пост о том как правильно спланировать большую ванную комнату. Советы от экспертов Verona Store — зонирование, выбор мебели и сантехники Salini."
+        "caption": "📐 Большая ванная — как не потеряться\n\nПросторная ванная требует правильного зонирования. Длинная линия мебели от стены до стены, встроенные ниши, продуманное освещение — всё это создаёт структуру пространства. Наши менеджеры помогут спланировать.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/b55/b5521eb42e6dff26e1344850faf7db95/09.jpg",
-        "brand": "Salini",
-        "topic": "Напиши пост о ванной комнате с угловой ванной Salini. Как максимально использовать пространство и при этом сохранить элегантность и комфорт."
+        "caption": "⬛ Тёмные тона — смело и роскошно\n\nГрафит, антрацит, чёрный мрамор — тёмные ванные комнаты создают ощущение глубины и камерности. Salini выпускает сантехнику в широкой палитре тёмных оттенков. Это для тех кто не боится экспериментировать.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/f5e/f5e01a1dfd6418a0ee8e15b180fce7be/01.jpg",
-        "brand": "Salini",
-        "topic": "Напиши вдохновляющий пост о ванной в современном стиле. Отдельностоящая ванна Salini как арт-объект — когда функциональность становится искусством."
+        "caption": "🌊 Форма следует за водой\n\nПлавные изгибы ванны Salini — не случайность, а философия. Форма которая повторяет движение воды, поверхность которая приятна на ощупь. Литьевой камень сохраняет тепло воды дольше обычного акрила.\n\nПриходите и потрогайте сами.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/54c/54c053241a36ba1a06f064b460b490a8/04.jpg",
-        "brand": "Salini",
-        "topic": "Напиши живой пост о компактной ванной комнате до 5 кв.м. Как Salini помогает создать функциональное и красивое пространство даже в небольшой ванной."
+        "caption": "🏠 Компактная ванная — не компромисс\n\nДаже в 5 кв.м можно создать красивое и функциональное пространство. Правильный выбор мебели, встроенные хранилища, подвесная сантехника — и маленькая ванная становится уютной. Поможем спланировать.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
     {
         "photo": "https://cdn-salini.storage.yandexcloud.net/iblock/d3c/d3cdf37b46e3d5e72fd60b198dd1f442/06.jpg",
-        "brand": "Salini",
-        "topic": "Напиши пост о ванной комнате в тёмных тонах — графит, антрацит, чёрный мрамор. Как тёмные материалы Salini создают ощущение роскоши и глубины."
+        "caption": "💡 Свет который меняет всё\n\nПравильное освещение — половина успеха ванной комнаты. Световая стена вместо окна, подсветка ниш, зеркало с подсветкой — всё это создаёт атмосферу. Приходите в наш шоурум — у нас работают живые примеры освещения.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
     },
 ]
  
@@ -142,64 +129,25 @@ def faq_keyboard():
 def cancel_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отмена", callback_data="cancel_consult")]])
  
-async def generate_caption(topic: str, brand: str) -> str:
-    system = (
-        f"Ты контент-менеджер магазина Verona Store (verona-store.ru). "
-        f"Пишешь живые, интересные подписи к фото для Telegram-канала о премиальной мебели для ванных. "
-        f"Стиль: живой, вдохновляющий, как пишет человек — без штампов и канцеляризмов. "
-        f"Длина: 4-6 предложений. "
-        f"В конце добавь:\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot\n\n"
-        f"Используй 1-2 эмодзи в тексте. Пиши на русском."
-    )
+async def publish_post(app: Application, post_index: int = None):
+    if post_index is None:
+        day = datetime.now(MOSCOW_TZ).timetuple().tm_yday
+        post_index = day % len(POSTS)
+    post = POSTS[post_index]
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "model": "claude-sonnet-4-20250514",
-                    "max_tokens": 500,
-                    "system": system,
-                    "messages": [{"role": "user", "content": topic}]
-                }
+        await app.bot.send_photo(
+            chat_id=CHANNEL_ID,
+            photo=post["photo"],
+            caption=post["caption"]
+        )
+        logging.info(f"✅ Пост опубликован!")
+        if MANAGER_CHAT_ID:
+            await app.bot.send_message(
+                MANAGER_CHAT_ID,
+                f"✅ Пост опубликован в канал!"
             )
-        return r.json()["content"][0]["text"]
     except Exception as e:
-        logging.error(f"Ошибка генерации текста: {e}")
-        return None
- 
-async def publish_daily_post(app: Application):
-    now = datetime.now(MOSCOW_TZ)
-    day_of_year = now.timetuple().tm_yday
-    post_data = POSTS[day_of_year % len(POSTS)]
- 
-    photo_url = post_data["photo"]
-    brand = post_data["brand"]
-    topic = post_data["topic"]
- 
-    logging.info(f"📝 Генерирую пост с фото: {brand}")
-    caption = await generate_caption(topic, brand)
- 
-    if caption:
-        try:
-            await app.bot.send_photo(
-                chat_id=CHANNEL_ID,
-                photo=photo_url,
-                caption=caption
-            )
-            logging.info(f"✅ Пост с фото опубликован! Бренд: {brand}")
-            if MANAGER_CHAT_ID:
-                await app.bot.send_message(
-                    MANAGER_CHAT_ID,
-                    f"✅ Пост опубликован в канал!\n\n📌 {brand}\n\n{caption[:200]}..."
-                )
-        except Exception as e:
-            logging.error(f"Ошибка публикации: {e}")
-            # Если фото не загрузилось — публикуем только текст
-            try:
-                await app.bot.send_message(chat_id=CHANNEL_ID, text=caption)
-            except Exception as e2:
-                logging.error(f"Ошибка публикации текста: {e2}")
+        logging.error(f"Ошибка публикации: {e}")
  
 async def scheduler(app: Application):
     logging.info("📅 Планировщик запущен — посты каждый день в 10:00 МСК")
@@ -214,7 +162,7 @@ async def scheduler(app: Application):
             m = int((wait_seconds % 3600) // 60)
             logging.info(f"⏰ Следующий пост через {h}ч {m}м")
             await asyncio.sleep(wait_seconds)
-            await publish_daily_post(app)
+            await publish_post(app)
         except Exception as e:
             logging.error(f"Ошибка планировщика: {e}")
             await asyncio.sleep(60)
@@ -230,15 +178,7 @@ async def force_post(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MANAGER_CHAT_ID:
         return
     await update.message.reply_text("⏳ Публикую пост...")
-    try:
-        await ctx.application.bot.send_photo(
-            chat_id=CHANNEL_ID,
-            photo="https://cdn-salini.storage.yandexcloud.net/iblock/2da/2da22e46b6959d9b10c20b159d4bc327/00.jpg",
-            caption="🪨 Когда природа входит в дом\n\nВанна PERLA из литьевого мрамора Salini — природный материал, ручная отделка, форма которую хочется трогать.\n\n📞 8 495 998-60-60\n🌐 verona-store.ru\n🤖 @VeronaStoreBot"
-        )
-        await update.message.reply_text("✅ Готово!")
-    except Exception as e:
-        await update.message.reply_text(f"❌ Ошибка: {e}")
+    await publish_post(ctx.application)
  
 async def button(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -315,7 +255,16 @@ async def ai_reply(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(reply, parse_mode="Markdown", reply_markup=main_keyboard())
  
 async def main():
+    # Сначала удаляем webhook и сбрасываем все обновления
     app = Application.builder().token(BOT_TOKEN).build()
+ 
+    await app.initialize()
+    await app.bot.delete_webhook(drop_pending_updates=True)
+    await app.shutdown()
+ 
+    # Теперь запускаем бота чисто
+    app = Application.builder().token(BOT_TOKEN).build()
+ 
     conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(button, pattern="^consult$")],
         states={
@@ -325,14 +274,14 @@ async def main():
         fallbacks=[CommandHandler("cancel", cancel), CallbackQueryHandler(button, pattern="^cancel_consult$")],
         per_message=False,
     )
+ 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("post", force_post))
     app.add_handler(conv)
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
  
-    print("✅ Verona Store Bot запущен с фото-постингом!")
-    print(f"📅 Посты с фото каждый день в 10:00 МСК в {CHANNEL_ID}")
+    print("✅ Verona Store Bot запущен!")
  
     async with app:
         await app.start()
