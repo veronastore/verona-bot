@@ -107,8 +107,8 @@ def generate_caption(context):
         return None
 
 def main():
-    day = datetime.now(MOSCOW_TZ).timetuple().tm_yday
-    post = PHOTOS[day % len(PHOTOS)]
+    import random
+post = random.choice(PHOTOS)
 
     print(f"Генерирую текст для поста...")
     caption = generate_caption(post["context"])
